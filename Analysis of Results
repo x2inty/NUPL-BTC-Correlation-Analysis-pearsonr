@@ -1,0 +1,17 @@
+Negative Correlation:
+
+All correlations are negative, confirming an inverse relationship between NUPL peaks and subsequent BTC low prices in the following days.
+
+The strength of the correlation varies slightly but remains generally weak to moderate (between -0.0436 and -0.1375).
+
+Statistical Significance (p-value):
+
+For timeframes of 0 to 20 days, the p-values are less than 0.05, indicating that the correlation is statistically significant. This means there is less than a 5% chance that this relationship is due to randomness.
+
+For timeframes of 21 to 29 days, the p-values exceed 0.05, suggesting that the correlation is no longer statistically significant. The observed relationship could then be due to chance.
+
+Optimal Timeframe:
+
+The strongest correlation is observed for a 10-day timeframe (Correlation = -0.1374, P-value = 0.0041).
+
+Timeframes of 0 to 20 days show significant correlations, but the strength of the correlation gradually decreases after 10 days.
