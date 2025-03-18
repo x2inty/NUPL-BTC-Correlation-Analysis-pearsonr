@@ -1,0 +1,39 @@
+import pandas as pd
+
+# Load data
+data = pd.read_csv('bitcoin-nupl.csv', delimiter=',', parse_dates=['DateTime'])
+data.rename(columns=lambda x: x.strip(), inplace=True)
+
+# Define the range and minimum variation to detect a peak
+SEUIL_NUPL_MIN = 0.5
+SEUIL_NUPL_MAX = 0.8
+VARIATION_MIN = 0.02  # Example: 5% variation to be considered a significant peak
+MIN_INTERVAL = 7  # Minimum spacing between two peaks (7 days)
+
+# Identify NUPL peaks within the range
+data['NUPL Peak'] = data['NUPL Value'].between(SEUIL_NUPL_MIN, SEUIL_NUPL_MAX)
+
+# Calculate NUPL variation
+data['NUPL Change Before'] = data['NUPL Value'].diff(1)  # Difference with the previous day
+data['NUPL Change After'] = data['NUPL Value'].diff(-1)  # Difference with the next day
+
+# Filter only peaks where the variation is significant
+peaks = data[
+    (data['NUPL Peak']) &
+    ((data['NUPL Change Before'].abs() > VARIATION_MIN) | (data['NUPL Change After'].abs() > VARIATION_MIN))
+]
+
+# Filter peaks to ensure they are not too close to each other
+filtered_peaks = []
+last_peak_date = None
+
+for index, peak in peaks.iterrows():
+    if last_peak_date is None or (peak['DateTime'] - last_peak_date).days >= MIN_INTERVAL:
+        filtered_peaks.append(peak)
+        last_peak_date = peak['DateTime']
+
+peaks = pd.DataFrame(filtered_peaks)  # Update the list of peaks
+
+# Display significant peaks
+print(peaks[['DateTime', 'NUPL Value']])
+
