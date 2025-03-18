@@ -1,67 +1,38 @@
 import pandas as pd
-from scipy.stats import pearsonr
 
-# Load the data
-data = pd.read_csv('nupl_btc_pearsonr.csv', delimiter=',', parse_dates=['DateTime'])
+# Load data
+data = pd.read_csv('bitcoin-nupl.csv', delimiter=',', parse_dates=['DateTime'])
 data.rename(columns=lambda x: x.strip(), inplace=True)
 
-# Define a threshold for NUPL
-threshold = 0.64  # Adjust this threshold as needed
+# Define the range and minimum variation to detect a peak
+SEUIL_NUPL_MIN = 0.5
+SEUIL_NUPL_MAX = 0.8
+VARIATION_MIN = 0.05  # Example: 5% variation to be considered a significant peak
+MIN_INTERVAL = 7  # Minimum spacing between two peaks (7 days)
 
-# Identify high peaks in NUPL
-data['NUPL Peak'] = data['NUPL'] > threshold
-peaks = data[data['NUPL Peak']]
+# Identify NUPL peaks within the range
+data['NUPL Peak'] = data['NUPL Value'].between(SEUIL_NUPL_MIN, SEUIL_NUPL_MAX)
 
-# Initialize a list to store raw results
-raw_results = []
+# Calculate NUPL variation
+data['NUPL Change Before'] = data['NUPL Value'].diff(1)  # Difference with the previous day
+data['NUPL Change After'] = data['NUPL Value'].diff(-1)  # Difference with the next day
 
-# Analyze BTC price lows after each NUPL peak
+# Filter only peaks where the variation is significant
+peaks = data[
+    (data['NUPL Peak']) &
+    ((data['NUPL Change Before'].abs() > VARIATION_MIN) | (data['NUPL Change After'].abs() > VARIATION_MIN))
+]
+
+# Filter peaks to ensure they are not too close to each other
+filtered_peaks = []
+last_peak_date = None
+
 for index, peak in peaks.iterrows():
-    peak_date = peak['DateTime']
-    peak_nupl = peak['NUPL']
-    
-    # Find the lowest BTC price after the NUPL peak
-    following_data = data[data['DateTime'] > peak_date]
-    
-    if not following_data.empty:
-        min_price_row = following_data[following_data['BTC price'] == following_data['BTC price'].min()]
-        if not min_price_row.empty:
-            min_date = min_price_row.iloc[0]['DateTime']
-            min_price = min_price_row.iloc[0]['BTC price']
-            delay_days = (min_date - peak_date).days
-            
-            raw_results.append({
-                'Peak Date': peak_date,
-                'NUPL Peak Value': peak_nupl,
-                'Min BTC Date': min_date,
-                'Min BTC Price': min_price,
-                'Delay (days)': delay_days
-            })
+    if last_peak_date is None or (peak['DateTime'] - last_peak_date).days >= MIN_INTERVAL:
+        filtered_peaks.append(peak)
+        last_peak_date = peak['DateTime']
 
-# Convert raw results into a DataFrame
-raw_results_df = pd.DataFrame(raw_results)
+peaks = pd.DataFrame(filtered_peaks)  # Update the list of peaks
 
-# Analyze correlation for different delays
-correlation_results = {}
-
-for delay in range(0, 30):  # Test delays from 0 to 30 days
-    delayed_prices = raw_results_df['Min BTC Price'].shift(-delay)
-    valid_data = raw_results_df[['NUPL Peak Value']].join(delayed_prices).dropna()
-    
-    # Compute Pearson correlation and p-value
-    correlation, p_value = pearsonr(valid_data['NUPL Peak Value'], valid_data['Min BTC Price'])
-    correlation_results[delay] = (correlation, p_value)
-
-# Find the optimal delay
-optimal_delay = min(correlation_results, key=lambda x: correlation_results[x][0])  # Use min for inverse correlation
-optimal_correlation, optimal_p_value = correlation_results[optimal_delay]
-
-# Display the results
-print(f"The optimal delay for an inverse correlation is {optimal_delay} days with a correlation of {optimal_correlation:.4f}.")
-print(f"P-value: {optimal_p_value:.4f}")
-
-# Display correlations for each delay
-print("\nCorrelations for each delay:")
-for delay, (corr, p_val) in correlation_results.items():
-    print(f"Delay of {delay} days: Correlation = {corr:.4f}, P-value = {p_val:.4f}")
-
+# Display significant peaks
+print(peaks[['DateTime', 'NUPL Value']])
