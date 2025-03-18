@@ -1,0 +1,45 @@
+This code serves as a reference point for detecting only the most significant NUPL peaks within a defined time interval.
+
+Solution with MIN_INTERVAL:
+
+MIN_INTERVAL prevents the detection of peaks that are too close together, which could be noise.
+It allows us to keep only the most significant peaks and avoid false signals.
+
+Enforce a minimum interval of X days (MIN_INTERVAL = X) between two peaks to avoid duplicates and keep only the most significant points.
+
+Concretely, the code works like this:
+
+1_ It selects the first peak that meets the conditions.
+
+2_ It ignores all other peaks that occur within the next 5 days.
+
+3_ If a new peak appears after 5 days, it is considered.
+
+Solution with Variation (VARIATION_MIN):
+
+VARIATION_MIN is used to identify true peaks by filtering out minor fluctuations in NUPL.
+
+VARIATION_MIN represents the minimum variation in NUPL required to consider a point as a peak.
+
+If NUPL increases or decreases by at least VARIATION_MIN, it is a potential peak.
+
+Otherwise, it is a minor fluctuation that is ignored.
+
+Exemple:
+If VARIATION_MIN = 0.02 (2%), a peak is valid if NUPL varies by more than 2% before or after that point.
+
+If VARIATION_MIN = 0.05 (5%), we filter out even more minor fluctuations and detect fewer, but more significant, peaks.
+
+Effect of VARIATION_MIN on Results:
+**If a small value is chosen (VARIATION_MIN = 0.01):**
+
+1_ Many peaks are captured, but some may be noise.
+
+2_ Every small rise or fall will be considered a peak.**
+
+**If a larger value is chosen (VARIATION_MIN = 0.05):
+
+1_Minor fluctuations are filtered out, and only true peaks are kept.
+
+2_Only major trend movements are captured.
+
