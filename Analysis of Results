@@ -34,3 +34,11 @@ print(data.loc[data['DateTime'].between('2024-12-01', '2024-12-30'), ['DateTime'
 4369 2024-12-29    0.572403            0.003272           0.010785
 4370 2024-12-30    0.561618           -0.010785           0.003291
 
+Average variation before/after a peak:
+peaks['NUPL Change'] = peaks['NUPL Value'].diff()
+print(peaks[['DateTime', 'NUPL Value', 'NUPL Change']])
+
+Variation in BTC price after each peak to determine if the signal is useful:
+peaks['BTC Price Change'] = peaks['BTC price (NUPL)'].diff()
+print(peaks[['DateTime', 'NUPL Value', 'BTC Price Change']])
+
