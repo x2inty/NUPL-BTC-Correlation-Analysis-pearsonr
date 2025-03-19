@@ -14,7 +14,7 @@ Consolidation: Trend between -2% and 2%.
 
 4_Correlation Analysis Between NUPL and Price Movements:
 Study the relationship between NUPL peaks and subsequent price movements.
-Identify the optimal delay for an inverse correlation (i.e., the delay after which NUPL peaks are most strongly associated with price drops).
+Identify the optimal delay for an inverse correlation (the delay after which NUPL peaks are most strongly associated with price drops).
 
 5_Buy Signal Strategy:
 Develop a strategy based on:
