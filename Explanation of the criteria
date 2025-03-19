@@ -8,8 +8,8 @@ The delay between the NUPL peak and the minimum price.
 
 3_Market Phase Classification:
 Classify the market into three phases based on the 5-day price trend:
-Bullish (Hausse): Trend > 2%.
-Bearish (Baisse): Trend < -2%.
+Bullish : Trend > 2%.
+Bearish : Trend < -2%.
 Consolidation: Trend between -2% and 2%.
 
 4_Correlation Analysis Between NUPL and Price Movements:
