@@ -1,0 +1,135 @@
+import pandas as pd
+from scipy.stats import pearsonr
+
+# Load data from the CSV file
+data = pd.read_csv('bitcoin-nupl.csv', delimiter=',', parse_dates=['DateTime'])
+data.rename(columns=lambda x: x.strip(), inplace=True)  # Clean column names
+
+# Adjusted parameters
+NUPL_THRESHOLD = 0.6  # Relaxed NUPL threshold
+TREND_THRESHOLD = -0.01  # Slightly bearish trend allowed
+SMA_WINDOW = 50  # SMA 50 instead of SMA 20
+PRICE_SMA_RATIO = 0.98  # Price slightly below SMA allowed
+VOLATILITY_THRESHOLD = data['BTC price (NUPL)'].rolling(window=7).std().quantile(0.75)  # Volatility threshold
+
+# Calculate SMA 50
+data['SMA_50'] = data['BTC price (NUPL)'].rolling(window=SMA_WINDOW).mean()
+
+# Detect NUPL peaks
+data['NUPL Variation'] = data['NUPL Value'].diff()
+data['Valid Peak'] = (data['NUPL Value'].between(NUPL_THRESHOLD, 0.83)) & (data['NUPL Variation'].abs() > 0.02)
+peaks = data[data['Valid Peak']].copy()
+peaks = peaks[peaks['DateTime'].diff().dt.days > 7]  # Filter peaks that are too close
+
+# Analyze BTC prices after each peak
+raw_results = []
+for _, peak in peaks.iterrows():
+    peak_date = peak['DateTime']
+    peak_nupl = peak['NUPL Value']
+    
+    following_data = data[data['DateTime'] > peak_date]
+    if not following_data.empty:
+        min_price_row = following_data.loc[following_data['BTC price (NUPL)'].idxmin()]
+        min_date = min_price_row['DateTime']
+        min_price = min_price_row['BTC price (NUPL)']
+        delay_days = (min_date - peak_date).days
+        
+        raw_results.append({
+            'Peak Date': peak_date,
+            'NUPL Peak Value': peak_nupl,
+            'Min BTC Date': min_date,
+            'Min BTC Price': min_price,
+            'Delay (days)': delay_days
+        })
+
+# Convert results to DataFrame
+raw_results_df = pd.DataFrame(raw_results)
+
+# Calculate price trend over 5 days
+data['Price Trend'] = data['BTC price (NUPL)'].pct_change(periods=5)
+
+# Define market phases
+data['Market Phase'] = 'Consolidation'  # Default
+data.loc[data['Price Trend'] > 0.02, 'Market Phase'] = 'Bullish'
+data.loc[data['Price Trend'] < -0.02, 'Market Phase'] = 'Bearish'
+
+# Merge market phases with results
+raw_results_df = raw_results_df.merge(data[['DateTime', 'Market Phase']], left_on='Peak Date', right_on='DateTime', how='left')
+
+# Check the distribution of market phases
+print("\nDistribution of market phases:")
+print(data['Market Phase'].value_counts())
+
+# Correlation analysis for different delays
+max_delay = 30  # Test delays from 0 to 30 days
+results = []
+for delay in range(max_delay):
+    delayed_prices = raw_results_df['Min BTC Price'].shift(-delay)
+    valid_data = raw_results_df[['NUPL Peak Value']].join(delayed_prices).dropna()
+    
+    correlation, p_value = pearsonr(valid_data['NUPL Peak Value'], valid_data['Min BTC Price'])
+    results.append({'Delay': delay, 'Correlation': correlation, 'P-value': p_value})
+
+# Convert results to DataFrame
+correlation_df = pd.DataFrame(results)
+optimal_delay = correlation_df.loc[correlation_df['Correlation'].idxmin()]
+
+# Buy signal detection (low NUPL + bullish trend + SMA confirmation)
+data['Volatility'] = data['BTC price (NUPL)'].rolling(window=7).std()  # Volatility over 7 days
+data['Buy Signal'] = (
+    (data['NUPL Value'] < NUPL_THRESHOLD) &  # Fear zone
+    (data['Price Trend'] > TREND_THRESHOLD) &  # Bullish trend
+    (data['BTC price (NUPL)'] > data['SMA_50'] * PRICE_SMA_RATIO) &  # Price above SMA 50
+    (data['Volatility'] < VOLATILITY_THRESHOLD)  # Moderate volatility
+)
+
+# Confirmation delay to avoid premature signals
+data['Buy Signal Confirmed'] = data['Buy Signal'].shift(3)  # 3-day delay
+
+# Calculate returns after each buy signal
+data['Future Price'] = data['BTC price (NUPL)'].shift(-7)  # Price 7 days later
+data['Return'] = (data['Future Price'] - data['BTC price (NUPL)']) / data['BTC price (NUPL)']
+
+# Filter confirmed buy signals (ignoring NaNs)
+confirmed_signals = data[data['Buy Signal Confirmed'].notna() & data['Buy Signal Confirmed']]
+
+# Calculate average return
+average_return = confirmed_signals['Return'].mean()
+print(f"Average return after a buy signal: {average_return:.4f} (i.e., {average_return * 100:.2f}%)")
+
+# Display detailed performance
+print("\nPerformance of confirmed buy signals:")
+print(confirmed_signals[['DateTime', 'BTC price (NUPL)', 'Future Price', 'Return', 'NUPL Value']])
+
+# Save results
+data.to_csv('nupl_analysis_results.csv', index=False)
+
+# Display results
+print(f"The optimal delay for an inverse correlation is {optimal_delay['Delay']} days with a correlation of {optimal_delay['Correlation']:.4f}.")
+print(f"P-value: {optimal_delay['P-value']:.4f}")
+print("\nCorrelations for each delay:")
+print(correlation_df.to_string(index=False))
+
+# Check data for 2025
+data_2025 = data[data['DateTime'].dt.year == 2025]
+print("\nData for 2025:")
+print(data_2025[['DateTime', 'NUPL Value', 'BTC price (NUPL)', 'Price Trend', 'Volatility', 'SMA_50']])
+
+# Check buy signals without confirmation delay
+print("\nDetected buy signals (without confirmation delay):")
+print(data[['DateTime', 'BTC price (NUPL)', 'Buy Signal']].query("`Buy Signal` == True"))
+
+# Check confirmed buy signals
+print("\nConfirmed buy signals:")
+print(data[['DateTime', 'BTC price (NUPL)', 'Buy Signal', 'Buy Signal Confirmed', 'NUPL Value']].query("`Buy Signal Confirmed` == True"))
+
+# Analyze Pearson correlation by market phase
+print("\nCorrelation analysis by market phase:")
+for phase in ['Bullish', 'Bearish', 'Consolidation']:
+    phase_data = raw_results_df[raw_results_df['Market Phase'] == phase]
+    if not phase_data.empty:
+        pearson_corr, pearson_p_value = pearsonr(phase_data['NUPL Peak Value'], phase_data['Min BTC Price'])
+        print(f"Pearson correlation in {phase} phase: {pearson_corr:.4f} (p-value: {pearson_p_value:.4f})")
+    else:
+        print(f"No data available for {phase} phase.")
+
