@@ -1,1 +1,104 @@
+To use:
+Particle Swarm Optimization (PSO) or Genetic Algorithms / Sharpe Ratio
+_________________________________________________________________________________________________________
+Thresholds to Optimize:
 
+1_Threshold for Market Phases (Price Trend):
+Current: Bullish (> 2%), Bearish (< -2%), Consolidation (between -2% and 2%).
+To optimize: Test other values (1%, 1.5%, 3%) to see if they improve classification.
+
+2_Threshold for NUPL (NUPL_THRESHOLD):
+Current: 0.6 (fear zone).
+To optimize: Test other values (0.5, 0.55, 0.65) to identify the optimal threshold.
+
+3_Threshold for SMA (SMA_WINDOW and PRICE_SMA_RATIO):
+SMA_WINDOW: Currently 50 (SMA 50). Test other periods (20, 30, 100).
+PRICE_SMA_RATIO: Currently 0.98 (price slightly below SMA allowed). Test other ratios (0.95, 1.0, 1.02).
+
+4_Threshold for Volatility (VOLATILITY_THRESHOLD):
+Current: 75th percentile of 7-day volatility.
+To optimize: Test other percentiles (e.g., 70th, 80th) or fixed values.
+
+5_Confirmation Delay for Buy Signals:
+Current: 3 days.
+To optimize: Test other delays (1 day, 5 days).
+__________________________________________________________________________________________________________
+bash : pip install scikit-learn or conda install scikit-learn
+pyhon : from sklearn.model_selection import GridSearchCV
+
+Best Threshold for Market Phases (Price Trend):
+
+import pandas as pd
+
+# Load the data
+data = pd.read_csv('bitcoin-nupl.csv', delimiter=',', parse_dates=['DateTime'])
+
+# Calculate the 7-day return
+data['Return'] = data['BTC price (NUPL)'].pct_change(periods=7)
+
+# Define a function to classify market phases
+def classify_market_phase(data, trend_threshold):
+    data['Price Trend'] = data['BTC price (NUPL)'].pct_change(periods=5)
+    data['Market Phase'] = 'Consolidation'
+    data.loc[data['Price Trend'] > trend_threshold, 'Market Phase'] = 'Bullish'
+    data.loc[data['Price Trend'] < -trend_threshold, 'Market Phase'] = 'Bearish'
+    return data
+
+# Define a scoring function (example: average return)
+def scoring_function(data, threshold):
+    data = classify_market_phase(data, threshold)
+    bullish_signals = data[data['Market Phase'] == 'Bullish']
+    return bullish_signals['Return'].mean()
+
+# Prepare the parameters to test
+thresholds = [0.01, 0.02, 0.03, 0.04, 0.05]
+results = []
+
+# Test each threshold
+for threshold in thresholds:
+    average_return = scoring_function(data.copy(), threshold)  # Use a copy of the data to avoid modifications
+    results.append({'Threshold': threshold, 'Average Return': average_return})
+
+# Convert the results to a DataFrame
+results_df = pd.DataFrame(results)
+print(results_df)
+
+# Find the best threshold
+best_threshold = results_df.loc[results_df['Average Return'].idxmax(), 'Threshold']
+print(f"Best threshold: {best_threshold}")
+
+_________________________________________________________________________________________________________________________
+Best NUPL thresholds:
+
+import pandas as pd
+
+# Load the data
+data = pd.read_csv('bitcoin-nupl.csv', delimiter=',', parse_dates=['DateTime'])
+
+# Calculate the 7-day return
+data['Return'] = data['BTC price (NUPL)'].pct_change(periods=7)
+
+# Define a scoring function (example: average return)
+def scoring_function(data, nupl_threshold):
+    # Filter data where NUPL is below the threshold
+    low_nupl_signals = data[data['NUPL Value'] < nupl_threshold]
+    
+    # Calculate the average return for these signals
+    return low_nupl_signals['Return'].mean()
+
+# Prepare the NUPL thresholds to test
+nupl_thresholds = [0.5, 0.55, 0.6, 0.65]  # Different thresholds to test
+results = []
+
+# Test each NUPL threshold
+for nupl_threshold in nupl_thresholds:
+    average_return = scoring_function(data.copy(), nupl_threshold)  # Use a copy of the data to avoid modifications
+    results.append({'NUPL Threshold': nupl_threshold, 'Average Return': average_return})
+
+# Convert the results to a DataFrame
+results_df = pd.DataFrame(results)
+print(results_df)
+
+# Find the best NUPL threshold
+best_nupl_threshold = results_df.loc[results_df['Average Return'].idxmax(), 'NUPL Threshold']
+print(f"Best NUPL threshold: {best_nupl_threshold}")
