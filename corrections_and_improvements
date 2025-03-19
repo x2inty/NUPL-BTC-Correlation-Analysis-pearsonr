@@ -1,0 +1,77 @@
+# Adjusted parameters
+NUPL_THRESHOLD = 0.6  # Relaxed NUPL threshold
+TREND_THRESHOLD = -0.01  # Slightly bearish trend allowed
+SMA_WINDOW = 50  # SMA 50 instead of SMA 20
+PRICE_SMA_RATIO = 0.98  # Price slightly below SMA allowed
+
+# Calculate SMA 50
+data['SMA_50'] = data['BTC price (NUPL)'].rolling(window=SMA_WINDOW).mean()
+
+# Buy signal detection
+data['Price Trend'] = data['BTC price (NUPL)'].pct_change(periods=5)  # Trend over 5 days
+data['Buy Signal'] = (
+    (data['NUPL Value'] < NUPL_THRESHOLD) &
+    (data['Price Trend'] > TREND_THRESHOLD) &
+    (data['BTC price (NUPL)'] > data['SMA_50'] * PRICE_SMA_RATIO)
+)
+
+# 1-day confirmation delay
+data['Buy Signal Confirmed'] = data['Buy Signal'].shift(1)
+
+# Display confirmed buy signals
+print("\nConfirmed buy signals (with adjusted conditions):")
+print(data[['DateTime', 'BTC price (NUPL)', 'Buy Signal', 'Buy Signal Confirmed']].query("`Buy Signal Confirmed` == True"))
+
+______________________________________________________________________________________________________________________________
+# Check data for 2025
+data_2025 = data[data['DateTime'].dt.year == 2025]
+print("Data for 2025:")
+print(data_2025[['DateTime', 'NUPL Value', 'BTC price (NUPL)', 'Price Trend', 'Volatility', 'SMA_20']])
+
+# Check buy signals without confirmation delay
+print("\nDetected buy signals (without confirmation delay):")
+print(data[['DateTime', 'BTC price (NUPL)', 'Buy Signal']].query("`Buy Signal` == True"))
+
+# Check confirmed buy signals
+print("\nConfirmed buy signals:")
+print(data[['DateTime', 'BTC price (NUPL)', 'Buy Signal', 'Buy Signal Confirmed']].query("`Buy Signal Confirmed` == True"))
+
+ DateTime  NUPL Value  BTC price (NUPL)  Price Trend   Volatility        SMA_20
+4372 2025-01-01    0.561161      94455.796572    -0.048164  1074.448677  97933.901161
+4373 2025-01-02    0.566767      96851.393683     0.012790  1409.083331  97711.979646
+4374 2025-01-03    0.576024      98120.684676     0.041400  2017.361080  97549.670297
+4375 2025-01-04    0.565590      98230.047857     0.032657  2394.948652  97233.604333
+4376 2025-01-05    0.581443      98414.812096     0.053043  2493.759918  96861.561326
+...         ...         ...               ...          ...          ...           ...
+4440 2025-03-10    0.459363      79005.960129    -0.084689  4444.331820  89215.752840
+4441 2025-03-11    0.454128      82747.160192    -0.052409  4517.468488  88520.715184
+4442 2025-03-12    0.476608      83630.158110    -0.077128  3823.106959  87782.612104
+4443 2025-03-13    0.479907      81110.289049    -0.100993  2828.976453  87035.676870
+4444 2025-03-14    0.465028      84105.833552    -0.028280  2414.009658  86410.683092
+
+   DateTime  BTC price (NUPL)  Buy Signal
+191  2013-07-11         87.497549        True
+192  2013-07-12         90.046699        True
+193  2013-07-13         91.592598        True
+194  2013-07-14         89.892269        True
+195  2013-07-15         93.796153        True
+...         ...               ...         ...
+4040 2024-02-03      42982.378998        True
+4041 2024-02-04      42576.291305        True
+4043 2024-02-06      43102.706263        True
+4044 2024-02-07      44253.031473        True
+4275 2024-09-26      65057.786146        True
+
+   DateTime  BTC price (NUPL)  Buy Signal Buy Signal Confirmed
+193  2013-07-13         91.592598        True                 True
+194  2013-07-14         89.892269        True                 True
+195  2013-07-15         93.796153        True                 True
+196  2013-07-16         91.781036        True                 True
+197  2013-07-17         91.031351        True                 True
+...         ...               ...         ...                  ...
+4042 2024-02-05      42619.274274       False                 True
+4043 2024-02-06      43102.706263        True                 True
+4045 2024-02-08      45332.091572       False                 True
+4046 2024-02-09      47176.966514       False                 True
+4277 2024-09-28      65770.527648       False                 True
+
