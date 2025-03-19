@@ -1,1 +1,32 @@
+1_Detection of NUPL Peaks:
+Identify significant NUPL peaks by filtering out those that are too close in time.
 
+2_Price Behavior After NUPL Peaks:
+Analyze how Bitcoin prices evolve after these peaks, focusing on:
+The minimum price reached after the peak.
+The delay between the NUPL peak and the minimum price.
+
+3_Market Phase Classification:
+Classify the market into three phases based on the 5-day price trend:
+Bullish (Hausse): Trend > 2%.
+Bearish (Baisse): Trend < -2%.
+Consolidation: Trend between -2% and 2%.
+
+4_Correlation Analysis Between NUPL and Price Movements:
+Study the relationship between NUPL peaks and subsequent price movements.
+Identify the optimal delay for an inverse correlation (i.e., the delay after which NUPL peaks are most strongly associated with price drops).
+
+5_Buy Signal Strategy:
+Develop a strategy based on:
+Low NUPL values (fear zone).
+Bullish price trends.
+Price above the SMA 50.
+Moderate volatility.
+Confirm buy signals with a 3-day delay to avoid false positives.
+
+6_Strategy Evaluation:
+Calculate the average return after confirmed buy signals.
+Analyze the overall performance of the strategy.
+
+7_Analysis by Market Phase:
+Study the correlation between NUPL peaks and price movements for each market phase (Bullish, Bearish, Consolidation).
