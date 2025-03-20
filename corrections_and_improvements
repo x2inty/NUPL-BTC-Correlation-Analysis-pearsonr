@@ -6,6 +6,8 @@ Volatility (1D) → Vol_1D
 Volatility (7D) → Vol_7D
 Added the column Future Price Change (14D) = Fut_Chg_14D / RSI_14, RSI_7
 
+[Integrate the Ordinary Least Squares (OLS) linear regression model in complementarity with polynomial regression. This model will allow us to verify the statistical significance of variables (via p-values) and detect issues such as multicollinearity.]
+
 Subsequently, I used the random forest model to capture non-linear relationships. Unlike linear regression, the random forest is capable of modeling complex interactions between variables. It also helps determine which variables contribute the most to the prediction.
 I also used polynomial regression to model non-linear relationships. This method allows for capturing complex curves in the data, which is particularly useful for identifying non-linear trends.
 
