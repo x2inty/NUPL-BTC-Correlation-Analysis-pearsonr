@@ -46,7 +46,7 @@ If a variable has an importance of 0.5 while others have importances below 0.1, 
 ____________________________________________________________________________________________________________________________________________________________________________
 In Progress:
 
-Polynomial Regression: (Scientific notation: -5.676230e+01 > -5.676230 × 10¹ = -5.676230 × 10 = -56.76230)
+Polynomial Regression: (Scientific notation: -5.676230e+01 > -5.676230 × 10¹ = -5.676230 × 10 = -56.676230)
 Variables with high coefficients (in absolute value) have a significant impact on the target variable. A variable is considered significant if the p-value associated with its coefficient is below a threshold. 
 Similar to random forests, a variable is significant if it has a clear interpretation in the context of the problem.
                       Feature   Coefficient
