@@ -1,10 +1,50 @@
+Pearson correlation matrix:
 
+BTC price (NUPL) and Fut_Chg_14D: -0.936
+A very strong negative correlation between the current BTC price and the future price change over 14 days. This suggests that high current prices are associated with future declines.
+
+NUPL Value and Fut_Chg_14D: -0.721
+A strong negative correlation between NUPL and the future price change over 14 days. A high NUPL is associated with a future decline.
+
+SMA_7 and Fut_Chg_14D: -0.844
+A strong negative correlation between the 7-day moving average and the future price change over 14 days. A high SMA_7 is associated with a future decline.
+
+SMA_14 and Fut_Chg_14D: -0.819
+A strong negative correlation between the 14-day moving average and the future price change over 14 days. A high SMA_14 is associated with a future decline.
+
+RSI_14 and Fut_Chg_14D: -0.754
+A strong negative correlation between the 14-day RSI and the future price change over 14 days. A high RSI is associated with a future decline.
+
+BTC price (NUPL) and Fut_Chg_7D: -0.676
+A moderate to strong negative correlation between the current BTC price and the future price change over 7 days.
+
+NUPL Value and Fut_Chg_7D: -0.595
+A moderate negative correlation between NUPL and the future price change over 7 days.
+
+RSI_14 and Fut_Chg_7D: -0.585
+A moderate negative correlation between the 14-day RSI and the future price change over 7 days.
+
+                  NUPL Value  BTC price (NUPL)  Daily_Chg  Fut_Chg_7D  Fut_Chg_14D    Vol_1D    Vol_7D     SMA_7    SMA_14    RSI_14     RSI_7
+NUPL Value          1.000000          0.777459  -0.276788   -0.595252    -0.720753  0.129225 -0.053631  0.701777  0.537196  0.678826  0.498815
+BTC price (NUPL)    0.777459          1.000000   0.212999   -0.676399    -0.936405  0.081791 -0.065118  0.767336  0.700682  0.911714  0.726880
+Daily_Chg          -0.276788          0.212999   1.000000   -0.113180    -0.107243  0.053039  0.040575 -0.214255 -0.134849  0.400663  0.528654
+Fut_Chg_7D         -0.595252         -0.676399  -0.113180    1.000000     0.677307 -0.118906  0.315643 -0.491065 -0.550620 -0.585327 -0.477097
+Fut_Chg_14D        -0.720753         -0.936405  -0.107243    0.677307     1.000000  0.017210  0.274777 -0.843718 -0.819075 -0.754317 -0.517041
+Vol_1D              0.129225          0.081791   0.053039   -0.118906     0.017210  1.000000  0.181127 -0.005298 -0.066833  0.119544  0.120513
+Vol_7D             -0.053631         -0.065118   0.040575    0.315643     0.274777  0.181127  1.000000 -0.266351 -0.455019  0.168488  0.293360
+SMA_7               0.701777          0.767336  -0.214255   -0.491065    -0.843718 -0.005298 -0.266351  1.000000  0.902012  0.459770  0.143138
+SMA_14              0.537196          0.700682  -0.134849   -0.550620    -0.819075 -0.066833 -0.455019  0.902012  1.000000  0.363998  0.067580
+RSI_14              0.678826          0.911714   0.400663   -0.585327    -0.754317  0.119544  0.168488  0.459770  0.363998  1.000000  0.941773
+RSI_7               0.498815          0.726880   0.528654   -0.477097    -0.517041  0.120513  0.293360  0.143138  0.067580  0.941773  1.000000
+___________________________________________________________________________________________________________________________________________________________________________
+In Progress:
 
 Random Forest:
 Variables with high importance contribute more to the model's prediction.
 A variable is considered significant if its importance is significantly higher than that of other variables.
 If a variable has an importance of 0.5 while others have importances below 0.1, it is considered significant.
-
+____________________________________________________________________________________________________________________________________________________________________________
+In Progress:
 
 Polynomial Regression: (Scientific notation: -5.676230e+01 > -5.676230 × 10¹ = -5.676230 × 10 = -56.76230)
 Variables with high coefficients (in absolute value) have a significant impact on the target variable. A variable is considered significant if the p-value associated with its coefficient is below a threshold. 
