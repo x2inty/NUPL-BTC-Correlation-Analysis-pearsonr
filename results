@@ -1,11 +1,7 @@
+In progress:
+
 Random Forest:
-            Feature  Importance
-1  BTC price (NUPL)    0.598538
-3            SMA_14    0.188943
-2             SMA_7    0.111248
-4            RSI_14    0.049475
-5            Vol_7D    0.038430
-0        NUPL Value    0.013365
+      
 
 ___________________________________________________
 Polynomial Regression:
