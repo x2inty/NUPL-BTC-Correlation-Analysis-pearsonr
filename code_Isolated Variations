@@ -1,0 +1,74 @@
+import pandas as pd
+
+# Step 1: Load the data from the CSV file
+data = pd.read_csv('bitcoin-nupl.csv')
+
+# Step 2: Convert the 'DateTime' column to datetime type
+data['DateTime'] = pd.to_datetime(data['DateTime'])
+
+# Step 3: Add the NUPL category
+def categorize_nupl(nupl):
+    if nupl <= 0.2:
+        return 'Low'
+    elif 0.2 < nupl <= 0.6:
+        return 'Medium'
+    else:
+        return 'High'
+
+# Apply categorization to the 'NUPL Value' column
+data['NUPL Category'] = data['NUPL Value'].apply(categorize_nupl)
+
+# Step 4: Calculate additional columns
+# Daily price change
+data['Daily Price Change'] = data['BTC price (NUPL)'].diff()
+
+# Future price in 7 days
+data['Future Price (7D)'] = data['BTC price (NUPL)'].shift(-7)
+
+# Percentage change of future price
+data['Future Price Change (7D)'] = ((data['Future Price (7D)'] - data['BTC price (NUPL)']) / data['BTC price (NUPL)']) * 100
+
+# 7-day moving average
+data['SMA_7'] = data['BTC price (NUPL)'].rolling(window=7).mean()
+
+# 14-day moving average
+data['SMA_14'] = data['BTC price (NUPL)'].rolling(window=14).mean()
+
+# 1-day volatility (2-day window to avoid NaN)
+data['Volatility (1D)'] = data['BTC price (NUPL)'].rolling(window=2).std()
+
+# 7-day volatility
+data['Volatility (7D)'] = data['BTC price (NUPL)'].rolling(window=7).std()
+
+# Step 5: Filter data for the range from 01/01/2025 to 31/01/2025
+start_date = '2025-01-01'
+end_date = '2025-01-31'
+data_filtered = data[(data['DateTime'] >= start_date) & (data['DateTime'] <= end_date)]
+
+# Step 6: Display the filtered data
+print(f"Filtered data from {start_date} to {end_date}:")
+print(data_filtered[['DateTime', 'NUPL Value', 'NUPL Category', 'BTC price (NUPL)', 'Daily Price Change', 'Future Price Change (7D)', 'Volatility (1D)', 'Volatility (7D)', 'SMA_7', 'SMA_14']])
+
+# Step 7: Descriptive statistics
+print("\nDescriptive statistics:")
+print(data_filtered[['NUPL Value', 'BTC price (NUPL)', 'Daily Price Change', 'Future Price Change (7D)', 'Volatility (1D)', 'Volatility (7D)', 'SMA_7', 'SMA_14']].describe())
+
+# Distribution of NUPL categories
+print("\nDistribution of NUPL categories:")
+print(data_filtered['NUPL Category'].value_counts())
+
+# Check for missing values
+print("\nMissing values by column:")
+print(data_filtered.isnull().sum())
+
+# Step 8: Calculate the Pearson correlation matrix
+correlation_matrix = data_filtered[['NUPL Value', 'BTC price (NUPL)', 'Daily Price Change', 'Future Price Change (7D)', 'Volatility (1D)', 'Volatility (7D)', 'SMA_7', 'SMA_14']].corr(method='pearson')
+
+# Display the correlation matrix
+print("\nPearson correlation matrix:")
+print(correlation_matrix)
+
+# Step 9: Save the filtered data to a new CSV file
+output_file = 'nupl_analysis_january_2025.csv'
+data_filtered.to_csv(output_file, index=False)
+print(f"\nThe filtered data has been saved to '{output_file}'.")
